@@ -1,6 +1,7 @@
 import time
 import argparse
 import logging
+import random
 from pymodbus.client import ModbusTcpClient
 
 # Configure logging
@@ -23,22 +24,28 @@ def run_client(port):
     try:
         # Loop to simulate continuous traffic for Wireshark capturing
         for i in range(5):
-            # Write to a holding register
-            address = 1
-            value = 100 + i
-            log.info(f"Writing value {value} to holding register {address}")
-            write_result = client.write_register(address, value)
-            if write_result.isError():
-                log.error("Error writing register")
+            # Simulate Boiler Temperature (Register 1)
+            temp_address = 1
+            temp_value = random.randint(75, 80)
+            log.info(f"Writing Boiler Temp {temp_value}°C to register {temp_address}")
+            client.write_register(temp_address, temp_value)
+            
+            # Simulate Motor Speed (Register 2)
+            speed_address = 2
+            speed_value = random.randint(1450, 1500)
+            log.info(f"Writing Motor Speed {speed_value} RPM to register {speed_address}")
+            client.write_register(speed_address, speed_value)
             
             time.sleep(1)
 
-            # Read from the holding register
-            read_result = client.read_holding_registers(address, count=1)
-            if not read_result.isError():
-                log.info(f"Read value from holding register {address}: {read_result.registers[0]}")
-            else:
-                log.error("Error reading register")
+            # Read them back
+            temp_result = client.read_holding_registers(temp_address, count=1)
+            if not temp_result.isError():
+                log.info(f"Read Boiler Temp from register {temp_address}: {temp_result.registers[0]}°C")
+                
+            speed_result = client.read_holding_registers(speed_address, count=1)
+            if not speed_result.isError():
+                log.info(f"Read Motor Speed from register {speed_address}: {speed_result.registers[0]} RPM")
                 
             time.sleep(1)
             print("-" * 30)
